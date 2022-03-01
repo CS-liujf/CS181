@@ -413,15 +413,16 @@ def cornersHeuristic(state, problem):
     "*** YOUR CODE HERE ***"
     # return 0  # Default to trivial solution
     heur = 0
-    if(len(state) == 5):
-        return heur
-
-    else:
-        leftCorners = set(corners).difference(set(state[1:]))
-        curPos = state[0]
-        for corner in leftCorners:
-            heur = heur+(curPos[0]-corner[0])**2+(curPos[1]-corner[1])**2
-        return heur
+    leftCorners = set(corners).difference(set(state[1:]))
+    curPos = state[0]
+    temp = []
+    for corner in leftCorners:
+        temp.append({'corner': corner, 'distance': abs(
+            curPos[0]-corner[0]) + abs(curPos[1]-corner[1])})
+    if len(temp) != 0:
+        temp.sort(key=lambda x: x['distance'])
+        heur = temp[-1]['distance']
+    return heur
 
 
 class AStarCornersAgent(SearchAgent):
@@ -525,6 +526,8 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
+    print('foodGrid')
+    print(foodGrid)
     return 0
 
 
