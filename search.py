@@ -133,22 +133,24 @@ def breadthFirstSearch(problem):
                 'route': []}
 
     queue.push(curState)
-    visited.add(curState['state'])
+    # visited.add(curState['state'])
     i: int = 0
     while not queue.isEmpty():
         i = i+1
         front = queue.pop()
+        if front['state'] in visited:
+            continue
         if problem.isGoalState(front['state']):
             res = front['route']
             break
 
-        # visited.add(front['state'])
+        visited.add(front['state'])
         succList = problem.getSuccessors(front['state'])
         for successor in succList:
             if successor[0] not in visited:
                 queue.push(
                     {'state': successor[0], 'action': successor[1], 'route': front['route']+[successor[1]]})
-                visited.add(successor[0])
+                # visited.add(successor[0])
 
     # return ['West', 'West', 'West', 'South', 'South']
     # print('路线', res)
@@ -166,20 +168,22 @@ def uniformCostSearch(problem: SearchProblem):
     startState = {'state': problem.getStartState(), 'action': 'Stop',
                   'route': []}
     queue.push(startState, 0)
-    visited.add(startState['state'])
+    # visited.add(startState['state'])
     while not queue.isEmpty():
         front = queue.pop()
+        if front['state'] in visited:
+            continue
         if problem.isGoalState(front['state']):
             res = front['route']
             break
 
-        # visited.add(front['state'])
+        visited.add(front['state'])
         succList = problem.getSuccessors(front['state'])
         for successor in succList:
             if successor[0] not in visited:
                 queue.push(
                     {'state': successor[0], 'action': successor[1], 'route': front['route']+[successor[1]]}, problem.getCostOfActions(front['route']+[successor[1]]))
-                visited.add(successor[0])
+                # visited.add(successor[0])
     return res
 
 
@@ -200,14 +204,16 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     startState = {'state': problem.getStartState(), 'action': 'Stop',
                   'route': []}
     queue.push(startState, 0+heuristic(startState['state'], problem))
-    visited.add(startState['state'])
+    # visited.add(startState['state'])
     while not queue.isEmpty():
         front = queue.pop()
+        if front['state'] in visited:
+            continue
         if problem.isGoalState(front['state']):
             res = front['route']
             break
 
-        # visited.add(front['state'])
+        visited.add(front['state'])
         succList = problem.getSuccessors(front['state'])
         for successor in succList:
             if successor[0] not in visited:
@@ -216,7 +222,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                      'action': successor[1],
                      'route': front['route']+[successor[1]]
                      }, problem.getCostOfActions(front['route']+[successor[1]])+heuristic(successor[0], problem))
-                visited.add(successor[0])
+                # visited.add(successor[0])
     return res
 
 
