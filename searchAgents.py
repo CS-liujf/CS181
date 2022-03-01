@@ -320,7 +320,13 @@ class CornersProblem(search.SearchProblem):
         """
         "*** YOUR CODE HERE ***"
 
-        return (self.startingPosition,)
+        # return (self.startingPosition,)
+
+        temp = [0, 0, 0, 0]
+        for index, item in enumerate(self.corners):
+            if(item == self.startingPosition):
+                temp[index] = 1
+        return (self.startingPosition, tuple(temp))
 
     def isGoalState(self, state) -> bool:
         """
@@ -331,7 +337,12 @@ class CornersProblem(search.SearchProblem):
         # print('corners', set(self.corners))
         # print('state', set(state))
         # print(self.corners)
-        return set(self.corners).issubset(set(state))
+        # return set(self.corners).issubset(set(state))
+
+        if state[1] == (1, 1, 1, 1):
+            return True
+
+        return False
 
     def getSuccessors(self, state):
         """
@@ -359,19 +370,26 @@ class CornersProblem(search.SearchProblem):
             # print(state[-1])
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
-            temp = (nextx, nexty)
+            nextPos = (nextx, nexty)
+            cor = list(state[1])
             # if(x == 4 and y == 2):
             #     print(temp)
             # if set(temp).issubset(set(self.corners)):
             #     print(temp)
             if not self.walls[nextx][nexty]:
                 # print('state', state)
-                if temp in self.corners and (temp not in state):
-                    nextState = (temp,)+state[1:]+(temp,)
-                    # print('nextstate', nextState)
-                else:
-                    nextState = (temp,)+state[1:]
+                # if temp in self.corners and (temp not in state):
+                #     nextState = (temp,)+state[1:]+(temp,)
+                #     # print('nextstate', nextState)
+                # else:
+                #     nextState = (temp,)+state[1:]
+                # cost = 1
+                # successors.append((nextState, action, cost))
+                for index, item in enumerate(self.corners):
+                    if(item == nextPos):
+                        cor[index] = 1
                 cost = 1
+                nextState = (nextPos, tuple(cor))
                 successors.append((nextState, action, cost))
 
         self._expanded += 1  # DO NOT CHANGE
@@ -412,16 +430,28 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
     # return 0  # Default to trivial solution
-    heur = 0
-    leftCorners = set(corners).difference(set(state[1:]))
-    curPos = state[0]
+    # heur = 0
+    # leftCorners = set(corners).difference(set(state[1:]))
+    # curPos = state[0]
+    # temp = []
+    # for corner in leftCorners:
+    #     temp.append({'corner': corner, 'distance': abs(
+    #         curPos[0]-corner[0]) + abs(curPos[1]-corner[1])})
+    # if len(temp) != 0:
+    #     temp.sort(key=lambda x: x['distance'])
+    #     heur = temp[-1]['distance']
+    # return heur
+
     temp = []
-    for corner in leftCorners:
-        temp.append({'corner': corner, 'distance': abs(
-            curPos[0]-corner[0]) + abs(curPos[1]-corner[1])})
-    if len(temp) != 0:
-        temp.sort(key=lambda x: x['distance'])
-        heur = temp[-1]['distance']
+    curPos = state[0]
+    for index, item in enumerate(state[1]):
+        corner = corners[index]
+        if(item == 0):
+            temp.append({'corner': corner, 'distance': abs(
+                curPos[0]-corner[0])+abs(curPos[1]-corner[1])})
+
+    temp.sort(key=lambda x: x['distance'])
+    heur = temp[-1]['distance'] if len(temp) > 0 else 0
     return heur
 
 
