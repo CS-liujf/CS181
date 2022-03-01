@@ -34,7 +34,7 @@ description for details.
 Good luck and happy searching!
 """
 
-from game import Directions
+from game import Directions, Grid
 from game import Agent
 from game import Actions
 import util
@@ -526,7 +526,7 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchType = FoodSearchProblem
 
 
-def foodHeuristic(state, problem):
+def foodHeuristic(state, problem: FoodSearchProblem):
     """
     Your heuristic for the FoodSearchProblem goes here.
 
@@ -555,10 +555,18 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
+    foodGrid: Grid
     "*** YOUR CODE HERE ***"
-    print('foodGrid')
-    print(foodGrid)
-    return 0
+    # print('foodGrid')
+    # print(foodGrid.asList())
+    temp = []
+    for food in foodGrid.asList():
+        temp.append({'foodPos': food, 'distance': mazeDistance(
+            position, food, problem.startingGameState)})
+
+    temp.sort(key=lambda x: x['distance'])
+    heur = temp[-1]['distance'] if len(temp) > 0 else 0
+    return heur
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -589,11 +597,21 @@ class ClosestDotSearchAgent(SearchAgent):
         # Here are some useful elements of the startState
         startPosition = gameState.getPacmanPosition()
         food = gameState.getFood()
+        food: Grid
+        # print(food)
         walls = gameState.getWalls()
-        problem = AnyFoodSearchProblem(gameState)
+        # problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        temp = []
+        for f in food.asList():
+            temp.append({'foodPos': f, 'distance': mazeDistance(
+                startPosition, f, gameState)})
+
+        temp.sort(key=lambda x: x['distance'])
+        problem = AnyFoodSearchProblem(gameState, temp[0]['foodPos'])
+        return search.uniformCostSearch(problem)
 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -611,7 +629,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     method.
     """
 
-    def __init__(self, gameState):
+    def __init__(self, gameState, foodPos=None):
         "Stores information from the gameState.  You don't need to change this."
         # Store the food for later reference
         self.food = gameState.getFood()
@@ -621,6 +639,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         self.startState = gameState.getPacmanPosition()
         self.costFn = lambda x: 1
         self._visited, self._visitedlist, self._expanded = {}, [], 0  # DO NOT CHANGE
+        self.foodPos = foodPos
 
     def isGoalState(self, state):
         """
@@ -628,9 +647,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         complete the problem definition.
         """
         x, y = state
-
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        return state == self.foodPos
 
 
 class ApproximateSearchAgent(Agent):
