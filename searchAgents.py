@@ -34,6 +34,7 @@ description for details.
 Good luck and happy searching!
 """
 
+from turtle import pos
 from game import Directions, Grid
 from game import Agent
 from game import Actions
@@ -377,14 +378,6 @@ class CornersProblem(search.SearchProblem):
             # if set(temp).issubset(set(self.corners)):
             #     print(temp)
             if not self.walls[nextx][nexty]:
-                # print('state', state)
-                # if temp in self.corners and (temp not in state):
-                #     nextState = (temp,)+state[1:]+(temp,)
-                #     # print('nextstate', nextState)
-                # else:
-                #     nextState = (temp,)+state[1:]
-                # cost = 1
-                # successors.append((nextState, action, cost))
                 for index, item in enumerate(self.corners):
                     if(item == nextPos):
                         cor[index] = 1
@@ -526,6 +519,24 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchType = FoodSearchProblem
 
 
+def approxFoodHeuristic(state, problem: FoodSearchProblem):
+    position, foodGrid = state
+    foodGrid: Grid
+    temp = []
+    i = 0
+    for food in foodGrid.asList():
+        print(i)
+        i = i+1
+        temp.append({'foodPos': food, 'distance': abs(
+            position[0]-food[0])+abs(position[1]-food[1])})
+        if i > 3:
+            break
+
+    temp.sort(key=lambda x: x['distance'])
+    heur = temp[-1]['distance'] if len(temp) > 0 else 0
+    return heur
+
+
 def foodHeuristic(state, problem: FoodSearchProblem):
     """
     Your heuristic for the FoodSearchProblem goes here.
@@ -559,14 +570,57 @@ def foodHeuristic(state, problem: FoodSearchProblem):
     "*** YOUR CODE HERE ***"
     # print('foodGrid')
     # print(foodGrid.asList())
-    temp = []
-    for food in foodGrid.asList():
-        temp.append({'foodPos': food, 'distance': mazeDistance(
-            position, food, problem.startingGameState)})
 
-    temp.sort(key=lambda x: x['distance'])
-    heur = temp[-1]['distance'] if len(temp) > 0 else 0
-    return heur
+    class inf(int):
+        def __init__(self):
+            pass
+
+        def __str__(self):
+            return 'inf_int'
+
+        def __float__(self) -> float:
+            return float('inf')
+
+        def __gt__(self, rhs) -> bool:
+            return True
+
+        def __ge__(self, rhs) -> bool:
+            return True
+
+    min_dis = inf()
+    temp = []
+    foodList = foodGrid.asList()
+    if len(foodList) == 0:
+        return 0
+    for food in foodList:
+        dis_temp = mazeDistance(position, food, problem.startingGameState)
+        min_dis = dis_temp if min_dis > dis_temp else min_dis
+
+    if len(foodList) == 1:
+        return min_dis
+    max_dis_in_food = 0
+    food = (foodList[0][0], foodList[0][1])
+    dis_list = [[] for i in range(len(foodList))]
+    for i in range(len(foodList)):
+        for j in range(i+1, len(foodList)):
+            dis_temp = mazeDistance(
+                foodList[i], foodList[j], problem.startingGameState)
+            # print((dis_temp, max_dis_in_food))
+            food = (i, j,) if dis_temp > max_dis_in_food else food
+            max_dis_in_food = dis_temp if dis_temp > max_dis_in_food else max_dis_in_food
+            dis_list[i].append(dis_temp)
+
+    for i in range(len(foodList)):
+        if i == food[0] or i == food[1]:
+            continue
+        else:
+            d1 = dis_list[i][food[0] -
+                             i-1] if i < food[0] else dis_list[food[0]][i-food[0]-1]
+            d2 = dis_list[i][food[1] -
+                             i-1] if i < food[1] else dis_list[food[1]][i-food[1]-1]
+            max_dis_in_food = (
+                d1+d2) if(d1+d2) > max_dis_in_food else max_dis_in_food
+    return min_dis+max_dis_in_food
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -653,11 +707,28 @@ class AnyFoodSearchProblem(PositionSearchProblem):
 
 
 class ApproximateSearchAgent(Agent):
-    "Implement your agent here.  Change anything but the class name."
+    #"Implement your agent here.  Change anything but the class name."
+    # def __init__(self):
+    #     # Warning: some advanced Python magic is employed below to find the right functions and problems
+
+    #     # Get the search function from the name and heuristic
+    #     self.searchFunction = lambda prob: search.approxAStarSearch(
+    #         prob, approxFoodHeuristic)
+    #     self.searchType = FoodSearchProblem
 
     def registerInitialState(self, state):
-        "This method is called before any moves are made."
-        "*** YOUR CODE HERE ***"
+        # "This method is called before any moves are made."
+        # "*** YOUR CODE HERE ***"
+        # util.raiseNotDefined()
+        # starttime = time.time()
+        # problem = self.searchType(state)  # Makes a new search problem
+        # self.actions = self.searchFunction(problem)  # Find a path
+        # totalCost = problem.getCostOfActions(self.actions)
+        # print('Path found with total cost of %d in %.1f seconds' %
+        #       (totalCost, time.time() - starttime))
+        # if '_expanded' in dir(problem):
+        #     print('Search nodes expanded: %d' % problem._expanded)
+        return
 
     def getAction(self, state):
         """
@@ -665,8 +736,17 @@ class ApproximateSearchAgent(Agent):
         The Agent will receive a GameState and must return an action from 
         Directions.{North, South, East, West, Stop}
         """
-        "*** YOUR CODE HERE ***"
+        # "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+        # if 'actionIndex' not in dir(self):
+        #     self.actionIndex = 0
+        # i = self.actionIndex
+        # self.actionIndex += 1
+        # if i < len(self.actions):
+        #     return self.actions[i]
+        # else:
+        #     return Directions.STOP
+        # return []
 
 
 def mazeDistance(point1, point2, gameState):
