@@ -105,7 +105,7 @@ class ReflexAgent(Agent):
             dis_temp = util.manhattanDistance(ghost, newPos)
             min_dis_ghost = dis_temp if dis_temp < min_dis_ghost else min_dis_ghost
 
-        return min_dis_ghost/min_dis_food+childGameState.getScore()
+        return 0.5*min_dis_ghost/min_dis_food+childGameState.getScore()
 
 
 def scoreEvaluationFunction(currentGameState):
