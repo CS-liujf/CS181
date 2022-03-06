@@ -226,6 +226,44 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     return res
 
 
+def myHeuristic(state, problem):
+    goal = problem.goal
+    return util.manhattanDistance(state, goal)
+
+
+def approxAStarSearch(problem, heuristic=myHeuristic):
+    """Search the node that has the lowest combined cost and heuristic first."""
+    "*** YOUR CODE HERE ***"
+    visited: set = set()
+    queue = util.PriorityQueue()
+    res = []
+    startState = {'state': problem.getStartState(), 'action': 'Stop',
+                  'route': []}
+    queue.push(startState, 0+heuristic(startState['state'], problem))
+    # visited.add(startState['state'])
+    while not queue.isEmpty():
+        front = queue.pop()
+        if front['state'] in visited:
+            continue
+        if problem.isGoalState(front['state']):
+            res = front['route']
+            break
+
+        visited.add(front['state'])
+        succList = problem.getSuccessors(front['state'])
+        for successor in succList:
+            if successor[0] not in visited:
+                if problem.isGoalState(successor[0]):
+                    res = front['route']+[successor[1]]
+                    return res
+                queue.push(
+                    {'state': successor[0],
+                     'action': successor[1],
+                     'route': front['route']+[successor[1]]
+                     }, problem.getCostOfActions(front['route']+[successor[1]])+heuristic(successor[0], problem))
+    return res
+
+
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
