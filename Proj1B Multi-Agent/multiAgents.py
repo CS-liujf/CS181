@@ -18,6 +18,8 @@ import random
 import util
 
 from game import Agent
+from pacman import GameState
+from game import AgentState
 
 
 class ReflexAgent(Agent):
@@ -30,7 +32,7 @@ class ReflexAgent(Agent):
     headers.
     """
 
-    def getAction(self, gameState):
+    def getAction(self, gameState: GameState):
         """
         You do not need to change this method, but you're welcome to.
 
@@ -55,7 +57,7 @@ class ReflexAgent(Agent):
 
         return legalMoves[chosenIndex]
 
-    def evaluationFunction(self, currentGameState, action):
+    def evaluationFunction(self, currentGameState: GameState, action):
         """
         Design a better evaluation function here.
 
@@ -79,7 +81,30 @@ class ReflexAgent(Agent):
             ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return childGameState.getScore()
+        # print('newGhost', newGhostStates)
+        foodList = newFood.asList()
+        ghostList = [ghostState.getPosition() for ghostState in newGhostStates]
+        for (index, item) in enumerate(ghostList):
+            if newPos == item and newScaredTimes[index] == 0:  # 表示ghost非scared
+                # print('不能到鬼的地方去')
+                return float('-inf')
+
+        if newPos in foodList:
+            return float('inf')
+
+        # 求到最近food的曼哈顿距离
+        min_dis_food = float('inf')
+        for food in foodList:
+            dis_temp = util.manhattanDistance(food, newPos)
+            min_dis_food = dis_temp if dis_temp < min_dis_food else min_dis_food
+
+        # 求到最近ghoast的曼哈顿距离
+        min_dis_ghost = float('inf')
+        for ghost in ghostList:
+            dis_temp = util.manhattanDistance(ghost, newPos)
+            min_dis_ghost = dis_temp if dis_temp < min_dis_ghost else min_dis_ghost
+
+        return 0.5*min_dis_ghost/min_dis_food+childGameState.getScore()
 
 
 def scoreEvaluationFunction(currentGameState):
