@@ -145,7 +145,36 @@ class MinimaxAgent(MultiAgentSearchAgent):
     Your minimax agent (question 2)
     """
 
-    def getAction(self, gameState):
+    def checkState(self, state: GameState, depth: int) -> bool:
+        if state.isWin() or state.isLose() or depth == self.depth:
+            return True
+        return False
+
+    def valueFunc(self, state: GameState, agentIdx: int, depth: int) -> int:
+        agentIdx = agentIdx % self.agentNum
+        depth = (depth+1) if agentIdx == 0 else depth  # 如果是max层则加1
+        if self.checkState(state, depth):
+            return self.evaluationFunction(state)
+        if agentIdx == 0:
+            return self.maxValue(state, agentIdx, depth)
+        else:
+            return self.minValue(state, agentIdx, depth)
+
+    def maxValue(self, state: GameState, agentIdx: int, depth: int) -> int:
+        v = float('-inf')
+        for action in state.getLegalActions(agentIdx):
+            v = max(v, self.valueFunc(state.getNextState(
+                agentIdx, action), (agentIdx+1), depth))
+        return v
+
+    def minValue(self, state: GameState, agentIdx: int, depth: int):
+        v = float('inf')
+        for action in state.getLegalActions(agentIdx):
+            v = min(v, self.valueFunc(state.getNextState(
+                agentIdx, action), (agentIdx+1), depth))
+        return v
+
+    def getAction(self, gameState: GameState):
         """
         Returns the minimax action from the current gameState using self.depth
         and self.evaluationFunction.
@@ -169,7 +198,18 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # print('agent num', gameState.getNumAgents())
+        self.agentNum: int = gameState.getNumAgents()
+        res = []
+        for action in gameState.getLegalActions():
+            nextState = gameState.getNextState(0, action)
+            temp = {
+                'action': action,
+                'value': self.valueFunc(nextState, 1, 0)
+            }
+            res.append(temp)
+        res.sort(key=lambda x: x['value'])
+        return res[-1].get('action')
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
