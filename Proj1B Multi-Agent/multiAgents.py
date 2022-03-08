@@ -226,7 +226,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         agentIdx = agentIdx % self.agentNum
         depth = (depth+1) if agentIdx == 0 else depth  # 如果是max层则加1
         if self.checkState(state, depth):
-            return self.evaluationFunction(state)
+            return self.evaluationFunction(state), ''
         if agentIdx == 0:
             return self.maxValue(state, agentIdx, depth, alpha, beta)
         else:
@@ -234,23 +234,27 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     def maxValue(self, state: GameState, agentIdx: int, depth: int, alpha: int, beta: int) -> int:
         v = float('-inf')
+        act = ''
         for action in state.getLegalActions(agentIdx):
-            v = max(v, self.valueFunc(state.getNextState(
-                agentIdx, action), (agentIdx+1), depth, alpha, beta))
+            temp = self.valueFunc(state.getNextState(
+                agentIdx, action), (agentIdx+1), depth, alpha, beta)[0]
+            act, v = (action, temp) if temp > v else (act, v)
             if v > beta:
-                return v
+                return v, act
             alpha = max(alpha, v)
-        return v
+        return v, act
 
     def minValue(self, state: GameState, agentIdx: int, depth: int, alpha: int, beta: int):
         v = float('inf')
+        act = ''
         for action in state.getLegalActions(agentIdx):
-            v = min(v, self.valueFunc(state.getNextState(
-                agentIdx, action), (agentIdx+1), depth, alpha, beta))
+            temp = self.valueFunc(state.getNextState(
+                agentIdx, action), (agentIdx+1), depth, alpha, beta)[0]
+            act, v = (action, temp) if temp < v else (act, v)
             if v < alpha:
-                return v
+                return v, act
             beta = min(beta, v)
-        return v
+        return v, act
 
     def getAction(self, gameState: GameState):
         """
@@ -259,19 +263,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         # util.raiseNotDefined()
         self.agentNum: int = gameState.getNumAgents()
-        res = []
         alpha = float('-inf')
         beta = float('inf')
-        for action in gameState.getLegalActions():
-            nextState = gameState.getNextState(0, action)
-            temp = {
-                'action': action,
-                'value': self.valueFunc(nextState, 1, 0, alpha, beta)
-            }
-            alpha = max(alpha, temp['value'])
-            res.append(temp)
-        res.sort(key=lambda x: x['value'])
-        return res[-1].get('action')
+        return self.valueFunc(gameState, 0, -1, alpha, beta)[1]
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
