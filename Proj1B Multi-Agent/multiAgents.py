@@ -266,6 +266,38 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       Your expectimax agent (question 4)
     """
 
+    def checkState(self, state: GameState, depth: int) -> bool:
+        if state.isWin() or state.isLose() or depth == self.depth:
+            return True
+        return False
+
+    def valueFunc(self, state: GameState, agentIdx: int, depth: int) -> 'tuple[int,str]':
+        agentIdx = agentIdx % self.agentNum
+        depth = (depth+1) if agentIdx == 0 else depth  # 如果是max层则加1
+        if self.checkState(state, depth):
+            return self.evaluationFunction(state), ''
+        if agentIdx == 0:
+            return self.maxValue(state, agentIdx, depth)
+        else:
+            return self.minValue(state, agentIdx, depth)
+
+    def maxValue(self, state: GameState, agentIdx: int, depth: int) -> 'tuple[int,str]':
+        v = float('-inf')
+        for action in state.getLegalActions(agentIdx):
+            temp = self.valueFunc(state.getNextState(
+                agentIdx, action), (agentIdx+1), depth)[0]
+            act, v = (action, temp) if temp > v else (act, v)
+        return v, act  # act 主要用于第一层递归
+
+    def minValue(self, state: GameState, agentIdx: int, depth: int) -> 'tuple[int,str]':
+        v = 0
+        successors = state.getLegalActions(agentIdx)
+        for action in successors:
+            temp = self.valueFunc(state.getNextState(
+                agentIdx, action), (agentIdx+1), depth)[0]
+            v += 1/len(successors)*temp
+        return v, ''
+
     def getAction(self, gameState):
         """
         Returns the expectimax action using self.depth and self.evaluationFunction
@@ -274,7 +306,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        self.agentNum: int = gameState.getNumAgents()
+        return self.valueFunc(gameState, 0, -1)[1]
 
 
 def betterEvaluationFunction(currentGameState):
