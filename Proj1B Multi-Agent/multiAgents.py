@@ -162,6 +162,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def maxValue(self, state: GameState, agentIdx: int, depth: int) -> 'tuple[int,str]':
         v = float('-inf')
+        act = ''
         for action in state.getLegalActions(agentIdx):
             temp = self.valueFunc(state.getNextState(
                 agentIdx, action), (agentIdx+1), depth)[0]
@@ -170,6 +171,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def minValue(self, state: GameState, agentIdx: int, depth: int) -> 'tuple[int,str]':
         v = float('inf')
+        act = ''
         for action in state.getLegalActions(agentIdx):
             temp = self.valueFunc(state.getNextState(
                 agentIdx, action), (agentIdx+1), depth)[0]
@@ -283,6 +285,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
     def maxValue(self, state: GameState, agentIdx: int, depth: int) -> 'tuple[int,str]':
         v = float('-inf')
+        act = ''
         for action in state.getLegalActions(agentIdx):
             temp = self.valueFunc(state.getNextState(
                 agentIdx, action), (agentIdx+1), depth)[0]
@@ -311,7 +314,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return self.valueFunc(gameState, 0, -1)[1]
 
 
-def betterEvaluationFunction(currentGameState):
+def betterEvaluationFunction(currentGameState: GameState) -> float:
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
@@ -319,7 +322,37 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    # childGameState = currentGameState.getPacmanNextState(action)
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    newScaredTimes = [
+        ghostState.scaredTimer for ghostState in newGhostStates]
+
+    foodList: 'list[tuple[int,int]]' = newFood.asList()
+    ghostList = [ghostState.getPosition() for ghostState in newGhostStates]
+    for (index, item) in enumerate(ghostList):
+        if newPos == item and newScaredTimes[index] == 0:  # 表示ghost非scared
+            # print('不能到鬼的地方去')
+            return float('-inf')
+
+    if newPos in foodList:
+        return float('inf')
+
+        # 求到最近food的曼哈顿距离
+    min_dis_food = float('inf')
+    for food in foodList:
+        dis_temp = util.manhattanDistance(food, newPos)
+        min_dis_food = dis_temp if dis_temp < min_dis_food else min_dis_food
+
+        # 求到最近ghoast的曼哈顿距离
+    min_dis_ghost = float('inf')
+    for ghost in ghostList:
+        dis_temp = util.manhattanDistance(ghost, newPos)
+        min_dis_ghost = dis_temp if dis_temp < min_dis_ghost else min_dis_ghost
+
+    return 0.5*min_dis_ghost/min_dis_food+currentGameState.getScore()
 
 
 # Abbreviation
