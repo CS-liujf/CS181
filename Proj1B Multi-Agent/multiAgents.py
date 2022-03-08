@@ -352,7 +352,7 @@ def betterEvaluationFunction(currentGameState: GameState) -> float:
         dis_temp = util.manhattanDistance(ghost, newPos)
         min_dis_ghost = dis_temp if dis_temp < min_dis_ghost else min_dis_ghost
 
-    return 0.5*min_dis_ghost/min_dis_food+currentGameState.getScore()
+    return 0.3*min_dis_ghost/min_dis_food**2+currentGameState.getScore()
 
 
 # Abbreviation
