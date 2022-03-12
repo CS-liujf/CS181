@@ -188,7 +188,7 @@ def exactlyOne(literals:list) :
     # util.raiseNotDefined()
     return atLeastOne(literals)&atMostOne(literals)
 
-def extractActionSequence(model, actions):
+def extractActionSequence(model:dict, actions:'list[str]'):
     """
     Convert a model in to an ordered list of actions.
     model: Propositional logic model stored as a dictionary with keys being
@@ -201,8 +201,17 @@ def extractActionSequence(model, actions):
     ['West', 'South', 'North']
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    temp=[]
+    for key,value in model.items():
+        act = logic.PropSymbolExpr.parseExpr(key)[0]
+        if act in actions and value is True:
+            t = int(logic.PropSymbolExpr.parseExpr(key)[1])
+            temp.append((act,t))
 
+    temp.sort(key=lambda x:x[1])
+    res=list(map(lambda x:x[0],temp))
+    return res
 
 def pacmanSuccessorStateAxioms(x, y, t, walls_grid):
     """
