@@ -17,6 +17,7 @@ In logicPlan.py, you will implement logic planning methods which are called by
 Pacman agents (in logicAgents.py).
 """
 
+from re import L
 import util
 import sys
 import logic
@@ -74,7 +75,15 @@ def sentence1():
     (not A) or (not B) or C
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    A = logic.Expr('A')
+    B = logic.Expr('B')
+    C = logic.Expr('C')
+    A_or_B = (A|B)
+    not_B_or_C= ((~B)|C)
+    not_A_iff_not_B_or_C=((~A) % not_B_or_C)
+    not_A_or_not_B_or_C=(logic.disjoin([(~A),(~B),(C)]))
+    return logic.conjoin(A_or_B,not_A_iff_not_B_or_C,not_A_or_not_B_or_C)
 
 def sentence2():
     """Returns a logic.Expr instance that encodes that the following expressions are all true.
@@ -85,7 +94,16 @@ def sentence2():
     (not D) implies C
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    A=logic.Expr('A')
+    B=logic.Expr('B')
+    C=logic.Expr('C')
+    D=logic.Expr('D')
+    C_iff_BorD=(C%(B|D))
+    A_imp_notB_and_notD=(A>>((~B)&(~D)))
+    not_Band_notC_imp_A=((~(B&(~C)))>> A)
+    notD_imp_C=((~D)>>C)
+    return logic.conjoin(C_iff_BorD,A_imp_notB_and_notD,not_Band_notC_imp_A,notD_imp_C)
 
 def sentence3():
     """Using the symbols WumpusAlive[1], WumpusAlive[0], WumpusBorn[0], and WumpusKilled[0],
@@ -100,14 +118,24 @@ def sentence3():
     The Wumpus is born at time 0.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    alive_1=logic.PropSymbolExpr('WumpusAlive',1)
+    alive_0=logic.PropSymbolExpr('WumpusAlive',0)
+    born_0=logic.PropSymbolExpr('WumpusBorn',0)
+    killed_0=logic.PropSymbolExpr('WumpusKilled',0)
+    encode_1=(alive_1%((alive_0&(~killed_0))|((~alive_0)&born_0)))
+    encode_2=(~(alive_0&born_0))
+    encode_3=(born_0)
+    return logic.conjoin(encode_1,encode_2,encode_3)
 
 def findModel(sentence):
     """Given a propositional logic sentence (i.e. a logic.Expr instance), returns a satisfying
     model if one exists. Otherwise, returns False.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    cnf_form=logic.to_cnf(sentence)
+    return logic.pycoSAT(cnf_form)
 
 def atLeastOne(literals) :
     """
