@@ -157,28 +157,36 @@ def atLeastOne(literals) :
     True
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    return logic.disjoin(literals)
 
 
-def atMostOne(literals) :
+def atMostOne(literals:list) :
     """
     Given a list of logic.Expr literals, return a single logic.Expr instance in 
     CNF (conjunctive normal form) that represents the logic that at most one of 
     the expressions in the list is true.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    temp=[]
+    for idx1,item1 in enumerate(literals):
+        for idx2,item2 in enumerate(literals):
+            if idx1<idx2:
+                temp.append(logic.disjoin(~item1,~item2))
+    
+    return logic.conjoin(temp)
 
 
-def exactlyOne(literals) :
+def exactlyOne(literals:list) :
     """
     Given a list of logic.Expr literals, return a single logic.Expr instance in 
     CNF (conjunctive normal form)that represents the logic that exactly one of 
     the expressions in the list is true.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
+    # util.raiseNotDefined()
+    return atLeastOne(literals)&atMostOne(literals)
 
 def extractActionSequence(model, actions):
     """
