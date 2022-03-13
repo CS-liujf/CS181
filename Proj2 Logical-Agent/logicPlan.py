@@ -220,8 +220,15 @@ def pacmanSuccessorStateAxioms(x, y, t, walls_grid):
     Current <==> (previous position at time t-1) & (took action to move to x, y)
     """
     "*** YOUR CODE HERE ***"
-    return logic.Expr('A') # Replace this with your expression
-
+    # return logic.Expr('A') # Replace this with your expression
+    prev_state = [((x-1,y),'East'),((x+1,y),'West'),((x,y+1),'South'),((x,y-1),'North')]
+    pre_liter_list =[]
+    for state in prev_state:
+        if not walls_grid[state[0][0]][state[0][1]]:
+            temp = logic.PropSymbolExpr(pacman_str,state[0][0], state[0][1], t-1) & logic.PropSymbolExpr(state[1], t-1)
+            pre_liter_list.append(temp)
+    current=logic.PropSymbolExpr(pacman_str,x,y,t)
+    return current%logic.disjoin(pre_liter_list)
 
 def positionLogicPlan(problem):
     """
