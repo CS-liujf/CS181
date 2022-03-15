@@ -238,9 +238,39 @@ def positionLogicPlan(problem):
     """
     walls = problem.walls
     width, height = problem.getWidth(), problem.getHeight()
-    
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    
+    actions = ['East','West','South','North']
+    start = problem.getStartState()
+    goal = problem.getGoalState()
+    start_prop=logic.PropSymbolExpr(pacman_str,start[0],start[1],0)
+    no_walls:'list[tuple]'=[]
+    temp=[]
+    for x in range(1,width+1):
+        for y in range(1, height+1):
+            if walls[x][y] is False:
+                no_walls.append((x,y))
+
+    for t in range(1,55):
+        goal_prop=logic.PropSymbolExpr(pacman_str,goal[0],goal[1],t)
+        temp=list(map(lambda act: logic.PropSymbolExpr(act,t-1),actions))
+        act_taken=exactlyOne(temp)
+        temp=list(map(lambda pos:pacmanSuccessorStateAxioms(pos[0],pos[1],t,walls),no_walls))
+        success_prop=logic.conjoin(temp)
+        temp=list(map(lambda pos: logic.PropSymbolExpr(pacman_str,pos[0],pos[1],t-1) ,no_walls))
+        pos_prop=exactlyOne(temp)
+        if t is not 1:
+            act_taken_conjoin= logic.conjoin(act_taken_conjoin,act_taken)
+            success_prop_conjoin=logic.conjoin(success_prop_conjoin,success_prop)
+            pos_prop_conjoin=logic.conjoin(pos_prop_conjoin,pos_prop)
+        else:
+            act_taken_conjoin=act_taken
+            success_prop_conjoin=success_prop
+            pos_prop_conjoin=pos_prop
+        model=findModel(logic.conjoin(start_prop,goal_prop,act_taken_conjoin,success_prop_conjoin,pos_prop_conjoin))
+        if model is not False:
+            return extractActionSequence(model,actions)
 
 
 def foodLogicPlan(problem):
