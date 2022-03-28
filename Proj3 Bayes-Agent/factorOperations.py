@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -12,12 +12,13 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 from functools import reduce
+from multiprocessing import Condition
 from bayesNet import Factor
 import operator as op
 import util
 
-def joinFactorsByVariableWithCallTracking(callTrackingList=None):
 
+def joinFactorsByVariableWithCallTracking(callTrackingList=None):
 
     def joinFactorsByVariable(factors, joinVariable):
         """
@@ -37,21 +38,25 @@ def joinFactorsByVariableWithCallTracking(callTrackingList=None):
         if not (callTrackingList is None):
             callTrackingList.append(('join', joinVariable))
 
-        currentFactorsToJoin =    [factor for factor in factors if joinVariable in factor.variablesSet()]
-        currentFactorsNotToJoin = [factor for factor in factors if joinVariable not in factor.variablesSet()]
+        currentFactorsToJoin = [
+            factor for factor in factors if joinVariable in factor.variablesSet()]
+        currentFactorsNotToJoin = [
+            factor for factor in factors if joinVariable not in factor.variablesSet()]
 
         # typecheck portion
-        numVariableOnLeft = len([factor for factor in currentFactorsToJoin if joinVariable in factor.unconditionedVariables()])
+        numVariableOnLeft = len(
+            [factor for factor in currentFactorsToJoin if joinVariable in factor.unconditionedVariables()])
         if numVariableOnLeft > 1:
-            print ("Factor failed joinFactorsByVariable typecheck: ", factor)
-            raise ValueError ("The joinBy variable can only appear in one factor as an \nunconditioned variable. \n" +  
-                               "joinVariable: " + str(joinVariable) + "\n" +
-                               ", ".join(map(str, [factor.unconditionedVariables() for factor in currentFactorsToJoin])))
-        
+            print("Factor failed joinFactorsByVariable typecheck: ", factor)
+            raise ValueError("The joinBy variable can only appear in one factor as an \nunconditioned variable. \n" +
+                             "joinVariable: " + str(joinVariable) + "\n" +
+                             ", ".join(map(str, [factor.unconditionedVariables() for factor in currentFactorsToJoin])))
+
         joinedFactor = joinFactors(currentFactorsToJoin)
         return currentFactorsNotToJoin, joinedFactor
 
     return joinFactorsByVariable
+
 
 joinFactorsByVariable = joinFactorsByVariableWithCallTracking()
 
@@ -61,7 +66,7 @@ def joinFactors(factors):
     Question 3: Your join implementation 
 
     Input factors is a list of factors.  
-    
+
     You should calculate the set of unconditioned variables and conditioned 
     variables for the join of those factors.
 
@@ -88,21 +93,36 @@ def joinFactors(factors):
     """
 
     # typecheck portion
-    factors = list(factors)
-    setsOfUnconditioned = [set(factor.unconditionedVariables()) for factor in factors]
+    factors: 'list[Factor]' = list(factors)
+    setsOfUnconditioned = [set(factor.unconditionedVariables())
+                           for factor in factors]
     if len(factors) > 1:
         intersect = reduce(lambda x, y: x & y, setsOfUnconditioned)
         if len(intersect) > 0:
-            print ("Factor failed joinFactors typecheck: ", factor)
-            raise ValueError ("unconditionedVariables can only appear in one factor. \n"
-                    + "unconditionedVariables: " + str(intersect) + 
-                    "\nappear in more than one input factor.\n" + 
-                    "Input factors: \n" +
-                    "\n".join(map(str, factors)))
-
+            print("Factor failed joinFactors typecheck: ", factor)
+            raise ValueError("unconditionedVariables can only appear in one factor. \n"
+                             + "unconditionedVariables: " + str(intersect) +
+                             "\nappear in more than one input factor.\n" +
+                             "Input factors: \n" +
+                             "\n".join(map(str, factors)))
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    unconditionedVars = set()
+    conditionedVars = set()
+    for factor in factors:
+        unconditionedVars = unconditionedVars.union(
+            factor.unconditionedVariables())
+        conditionedVars = conditionedVars.union(factor.conditionedVariables())
+        conditionedVars = conditionedVars.difference(unconditionedVars)
+    res: 'Factor' = Factor(
+        unconditionedVars, conditionedVars, factors[0].variableDomainsDict())
+    for assignment in res.getAllPossibleAssignmentDicts():
+        prob = 1
+        for factor in factors:
+            prob = prob*factor.getProbability(assignment)
+        res.setProbability(assignment, prob)
+    return res
 
 
 def eliminateWithCallTracking(callTrackingList=None):
@@ -114,7 +134,7 @@ def eliminateWithCallTracking(callTrackingList=None):
         Input factor is a single factor.
         Input eliminationVariable is the variable to eliminate from factor.
         eliminationVariable must be an unconditioned variable in factor.
-        
+
         You should calculate the set of unconditioned variables and conditioned 
         variables for the factor obtained by eliminating the variable
         eliminationVariable.
@@ -137,23 +157,24 @@ def eliminateWithCallTracking(callTrackingList=None):
 
         # typecheck portion
         if eliminationVariable not in factor.unconditionedVariables():
-            print ("Factor failed eliminate typecheck: ", factor)
-            raise ValueError ("Elimination variable is not an unconditioned variable " \
-                            + "in this factor\n" + 
-                            "eliminationVariable: " + str(eliminationVariable) + \
-                            "\nunconditionedVariables:" + str(factor.unconditionedVariables()))
-        
+            print("Factor failed eliminate typecheck: ", factor)
+            raise ValueError("Elimination variable is not an unconditioned variable "
+                             + "in this factor\n" +
+                             "eliminationVariable: " + str(eliminationVariable) +
+                             "\nunconditionedVariables:" + str(factor.unconditionedVariables()))
+
         if len(factor.unconditionedVariables()) == 1:
-            print ("Factor failed eliminate typecheck: ", factor)
-            raise ValueError ("Factor has only one unconditioned variable, so you " \
-                    + "can't eliminate \nthat variable.\n" + \
-                    "eliminationVariable:" + str(eliminationVariable) + "\n" +\
-                    "unconditionedVariables: " + str(factor.unconditionedVariables()))
+            print("Factor failed eliminate typecheck: ", factor)
+            raise ValueError("Factor has only one unconditioned variable, so you "
+                             + "can't eliminate \nthat variable.\n" +
+                             "eliminationVariable:" + str(eliminationVariable) + "\n" +
+                             "unconditionedVariables: " + str(factor.unconditionedVariables()))
 
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
     return eliminate
+
 
 eliminate = eliminateWithCallTracking()
 
@@ -199,12 +220,11 @@ def normalize(factor):
     variableDomainsDict = factor.variableDomainsDict()
     for conditionedVariable in factor.conditionedVariables():
         if len(variableDomainsDict[conditionedVariable]) > 1:
-            print ("Factor failed normalize typecheck: ", factor)
-            raise ValueError ("The factor to be normalized must have only one " + \
-                            "assignment of the \n" + "conditional variables, " + \
-                            "so that total probability will sum to 1\n" + 
-                            str(factor))
+            print("Factor failed normalize typecheck: ", factor)
+            raise ValueError("The factor to be normalized must have only one " +
+                             "assignment of the \n" + "conditional variables, " +
+                             "so that total probability will sum to 1\n" +
+                             str(factor))
 
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
-
