@@ -113,9 +113,10 @@ def constructBayesNet(gameState: 'GameState'):
             edges.append((house, obsVar))
 
     # variableDom
-    variableDomainsDict[X_POS_VAR] = [FOOD_LEFT_VAL, GHOST_LEFT_VAL]
-    variableDomainsDict[Y_POS_VAR] = [BOTH_TOP_VAL,
-                                      BOTH_BOTTOM_VAL, LEFT_TOP_VAL, LEFT_BOTTOM_VAL]
+    variableDomainsDict[X_POS_VAR] = X_POS_VALS
+    variableDomainsDict[Y_POS_VAR] = Y_POS_VALS
+    variableDomainsDict[FOOD_HOUSE_VAR] = HOUSE_VALS
+    variableDomainsDict[GHOST_HOUSE_VAR] = HOUSE_VALS
     for obsVar in obsVars:
         variableDomainsDict[obsVar] = [NO_OBS_VAL, RED_OBS_VAL, BLUE_OBS_VAL]
     variables = [X_POS_VAR, Y_POS_VAR] + HOUSE_VARS + obsVars
@@ -150,7 +151,12 @@ def fillYCPT(bayesNet, gameState):
 
     yFactor = bn.Factor([Y_POS_VAR], [], bayesNet.variableDomainsDict())
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    from layout import PROB_BOTH_TOP, PROB_BOTH_BOTTOM, PROB_ONLY_LEFT_TOP, PROB_ONLY_LEFT_BOTTOM
+    yFactor.setProbability({Y_POS_VAR: BOTH_TOP_VAL}, PROB_BOTH_TOP)
+    yFactor.setProbability({Y_POS_VAR: BOTH_BOTTOM_VAL}, PROB_BOTH_BOTTOM)
+    yFactor.setProbability({Y_POS_VAR: LEFT_TOP_VAL}, PROB_ONLY_LEFT_TOP)
+    yFactor.setProbability({Y_POS_VAR: LEFT_BOTTOM_VAL}, PROB_ONLY_LEFT_BOTTOM)
     bayesNet.setCPT(Y_POS_VAR, yFactor)
 
 
@@ -219,7 +225,18 @@ def fillObsCPT(bayesNet, gameState):
     bottomLeftPos, topLeftPos, bottomRightPos, topRightPos = gameState.getPossibleHouses()
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    # possibleHouses = [bottomLeftPos, topLeftPos, bottomRightPos, topRightPos]
+    # i = 0
+    # for housePos in possibleHouses:
+    #     for obsPos in gameState.getHouseWalls(housePos):
+    #         obsVar = OBS_VAR_TEMPLATE % obsPos
+    #         obsFactor = bn.Factor(
+    #             [obsVar], [FOOD_HOUSE_VAR, GHOST_HOUSE_VAR], bayesNet.variableDomainsDict())
+    #         for row in obsFactor.getAllPossibleAssignmentDicts():
+    #             if i < 3:
+    #                 print(row)
+    #             i = i+1
 
 
 def getMostLikelyFoodHousePosition(evidence, bayesNet, eliminationOrder):
