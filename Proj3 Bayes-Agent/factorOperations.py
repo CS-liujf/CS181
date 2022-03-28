@@ -113,8 +113,8 @@ def joinFactors(factors):
     for factor in factors:
         unconditionedVars = unconditionedVars.union(
             factor.unconditionedVariables())
-        conditionedVars = conditionedVars.union(factor.conditionedVariables())
-        conditionedVars = conditionedVars.difference(unconditionedVars)
+        conditionedVars = conditionedVars.union(
+            factor.conditionedVariables()).difference(unconditionedVars)
     res: 'Factor' = Factor(
         unconditionedVars, conditionedVars, factors[0].variableDomainsDict())
     for assignment in res.getAllPossibleAssignmentDicts():
