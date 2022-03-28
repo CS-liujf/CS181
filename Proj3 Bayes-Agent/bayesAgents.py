@@ -131,7 +131,7 @@ def fillCPTs(bayesNet, gameState):
     fillObsCPT(bayesNet, gameState)
 
 
-def fillXCPT(bayesNet, gameState):
+def fillXCPT(bayesNet: 'bn.BayesNet', gameState: 'GameState'):
     from layout import PROB_FOOD_LEFT
     xFactor = bn.Factor([X_POS_VAR], [], bayesNet.variableDomainsDict())
     xFactor.setProbability({X_POS_VAR: FOOD_LEFT_VAL}, PROB_FOOD_LEFT)
@@ -139,7 +139,7 @@ def fillXCPT(bayesNet, gameState):
     bayesNet.setCPT(X_POS_VAR, xFactor)
 
 
-def fillYCPT(bayesNet, gameState):
+def fillYCPT(bayesNet: 'bn.BayesNet', gameState: 'GameState'):
     """
     Question 2a: Bayes net probabilities
 
@@ -198,7 +198,7 @@ def fillHouseCPT(bayesNet, gameState):
     bayesNet.setCPT(GHOST_HOUSE_VAR, ghostHouseFactor)
 
 
-def fillObsCPT(bayesNet, gameState):
+def fillObsCPT(bayesNet: 'bn.BayesNet', gameState: 'GameState'):
     """
     Question 2b: Bayes net probabilities
 
@@ -226,17 +226,36 @@ def fillObsCPT(bayesNet, gameState):
 
     "*** YOUR CODE HERE ***"
     # util.raiseNotDefined()
-    # possibleHouses = [bottomLeftPos, topLeftPos, bottomRightPos, topRightPos]
-    # i = 0
-    # for housePos in possibleHouses:
-    #     for obsPos in gameState.getHouseWalls(housePos):
-    #         obsVar = OBS_VAR_TEMPLATE % obsPos
-    #         obsFactor = bn.Factor(
-    #             [obsVar], [FOOD_HOUSE_VAR, GHOST_HOUSE_VAR], bayesNet.variableDomainsDict())
-    #         for row in obsFactor.getAllPossibleAssignmentDicts():
-    #             if i < 3:
-    #                 print(row)
-    #             i = i+1
+    possibleHouses: 'list[tuple]' = [bottomLeftPos,
+                                     topLeftPos, bottomRightPos, topRightPos]
+
+    keys = [BOTTOM_LEFT_VAL, TOP_LEFT_VAL, BOTTOM_RIGHT_VAL, TOP_RIGHT_VAL]
+    housePosDict = dict(zip(keys, possibleHouses))
+    for housePos in possibleHouses:
+        for obsPos in gameState.getHouseWalls(housePos):
+            obsVar = OBS_VAR_TEMPLATE % obsPos
+            obsFactor = bn.Factor(
+                [obsVar], [FOOD_HOUSE_VAR, GHOST_HOUSE_VAR], bayesNet.variableDomainsDict())
+            for assignmentDict in obsFactor.getAllPossibleAssignmentDicts():
+                prob = 0
+                obsVal = assignmentDict[obsVar]
+                foodHousePos = housePosDict[assignmentDict[FOOD_HOUSE_VAR]]
+                ghostHousePos = housePosDict[assignmentDict[GHOST_HOUSE_VAR]]
+                if abs(foodHousePos[0]-obsPos[0]) < 2 and abs(foodHousePos[1]-obsPos[1]) < 2:
+                    if obsVal == RED_OBS_VAL:
+                        prob = PROB_FOOD_RED
+                    elif obsVal == BLUE_OBS_VAL:
+                        prob = 1-PROB_FOOD_RED
+                elif abs(ghostHousePos[0]-obsPos[0]) < 2 and abs(ghostHousePos[1]-obsPos[1]) < 2:
+                    if obsVal == RED_OBS_VAL:
+                        prob = PROB_GHOST_RED
+                    elif obsVal == BLUE_OBS_VAL:
+                        prob = 1-PROB_GHOST_RED
+                elif obsVal == NO_OBS_VAL:
+                    prob = 1
+
+                obsFactor.setProbability(assignmentDict, prob)
+            bayesNet.setCPT(obsVar, obsFactor)
 
 
 def getMostLikelyFoodHousePosition(evidence, bayesNet, eliminationOrder):
