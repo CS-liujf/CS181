@@ -127,7 +127,7 @@ def joinFactors(factors):
 
 def eliminateWithCallTracking(callTrackingList=None):
 
-    def eliminate(factor, eliminationVariable):
+    def eliminate(factor: 'Factor', eliminationVariable: 'str'):
         """
         Question 4: Your eliminate implementation 
 
@@ -171,7 +171,28 @@ def eliminateWithCallTracking(callTrackingList=None):
                              "unconditionedVariables: " + str(factor.unconditionedVariables()))
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        # print('xiaochu', type(eliminationVariable))
+        unconditionedVars = list(
+            filter(lambda var: var != eliminationVariable, factor.unconditionedVariables()))
+        # print(unconditionedVars)
+        res = Factor(unconditionedVars, factor.conditionedVariables(),
+                     factor.variableDomainsDict())
+
+        # print(factor.getAllPossibleAssignmentDicts())
+        variableDomainsDict: 'dict' = factor.variableDomainsDict()
+        # print(variableDomainsDict[eliminationVariable])
+        # i = 0
+        for assignment in res.getAllPossibleAssignmentDicts():
+            # print(assignment)
+            prob = 0
+            for val in variableDomainsDict[eliminationVariable]:
+                assignment[eliminationVariable] = val
+                prob += factor.getProbability(assignment)
+
+            del assignment[eliminationVariable]
+            res.setProbability(assignment, prob)
+        return res
 
     return eliminate
 
