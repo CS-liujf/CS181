@@ -200,7 +200,7 @@ def eliminateWithCallTracking(callTrackingList=None):
 eliminate = eliminateWithCallTracking()
 
 
-def normalize(factor):
+def normalize(factor: 'Factor'):
     """
     Question 5: Your normalize implementation 
 
@@ -248,4 +248,30 @@ def normalize(factor):
                              str(factor))
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    conditionedVars = factor.conditionedVariables()
+    unconditionedVars = factor.unconditionedVariables()
+    variableDomainsDict = factor.variableDomainsDict()
+    for var in factor.unconditionedVariables():
+        if len(variableDomainsDict[var]) == 1:
+            unconditionedVars.discard(var)
+            conditionedVars.add(var)
+
+    from functools import reduce
+    possibleAssignmentDicts = factor.getAllPossibleAssignmentDicts()
+
+    # def add(x: 'dict', y: 'dict') -> 'float':
+    #     if type(x) == float:
+    #         return x+factor.getProbability(y)
+    #     return factor.getProbability(x)+factor.getProbability(y)
+    # sum =reduce(add,possibleAssignmentDicts)
+    sum = reduce(lambda x, y: x+y,
+                 map(lambda x: factor.getProbability(x), possibleAssignmentDicts))
+    if sum == 0:
+        return None
+
+    res = Factor(unconditionedVars, conditionedVars, variableDomainsDict)
+    for assignment in factor.getAllPossibleAssignmentDicts():
+        prob = factor.getProbability(assignment)
+        res.setProbability(assignment, prob/sum)
+    return res
