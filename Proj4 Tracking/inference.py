@@ -14,6 +14,8 @@
 
 import itertools
 import random
+
+from sympy import summation
 import busters
 import game
 
@@ -75,6 +77,10 @@ class DiscreteDistribution(dict):
         {}
         """
         "*** YOUR CODE HERE ***"
+        summation = self.total()
+        if summation != 0:
+            for key in self.keys():
+                self[key] = self[key]/summation
 
     def sample(self):
         """
@@ -98,6 +104,13 @@ class DiscreteDistribution(dict):
         0.0
         """
         "*** YOUR CODE HERE ***"
+        random_float = random.random()
+        summation = self.total()
+        accumulate = 0
+        for key in self.keys():
+            if accumulate <= random_float and random_float < (self[key]/summation+accumulate):
+                return key
+            accumulate = accumulate+self[key]/summation
 
 
 class InferenceModule:
