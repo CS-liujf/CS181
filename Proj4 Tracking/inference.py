@@ -390,6 +390,18 @@ class ParticleFilter(InferenceModule):
         gameState.
         """
         "*** YOUR CODE HERE ***"
+        # self.particles = list(map(lambda x: self.getPositionDistribution(
+        #     gameState, x).sample(), self.particles))
+        particles = []
+        ghostDistDict = {}
+        for ghost in self.particles:
+            if ghost not in ghostDistDict.keys():
+                ghostDistDict[ghost] = self.getPositionDistribution(
+                    gameState, ghost)
+                # print('hhhh')
+            particles.append(ghostDistDict[ghost].sample())
+        # print(self.particles)
+        self.particles = particles
 
     def getBeliefDistribution(self):
         """
