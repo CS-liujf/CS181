@@ -363,6 +363,21 @@ class ParticleFilter(InferenceModule):
         the DiscreteDistribution may be useful.
         """
         "*** YOUR CODE HERE ***"
+        cur_pos = gameState.getPacmanPosition()
+        jail_pos = self.getJailPosition()
+        weight_dist = DiscreteDistribution()
+        for ghost in self.particles:
+            weight_dist[ghost] = weight_dist[ghost] + \
+                self.getObservationProb(observation, cur_pos, ghost, jail_pos)
+
+        if weight_dist.total() == 0:
+            self.initializeUniformly(gameState)
+            return
+
+        weight_dist.normalize()
+        self.particles = [weight_dist.sample()
+                          for x in range(self.numParticles)]
+
 
     def elapseTime(self, gameState):
         """
