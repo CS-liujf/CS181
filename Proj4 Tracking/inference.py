@@ -346,6 +346,9 @@ class ParticleFilter(InferenceModule):
         """
         self.particles = []
         "*** YOUR CODE HERE ***"
+        numLegal = len(self.legalPositions)
+        for i in range(self.numParticles):
+            self.particles.append(self.legalPositions[i % numLegal])
 
     def observeUpdate(self, observation, gameState):
         """
@@ -375,6 +378,11 @@ class ParticleFilter(InferenceModule):
         essentially converts a list of particles into a belief distribution.
         """
         "*** YOUR CODE HERE ***"
+        cur_belief = DiscreteDistribution()
+        for particle in self.particles:
+            cur_belief[particle] += 1
+        cur_belief.normalize()
+        return cur_belief
 
 
 class JointParticleFilter(ParticleFilter):
