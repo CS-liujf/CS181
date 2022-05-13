@@ -379,10 +379,10 @@ class ParticleFilter(InferenceModule):
 
         if weight_dist.total() == 0:
             self.initializeUniformly(gameState)
-            return
 
-        self.particles = [weight_dist.sample()
-                          for x in range(self.numParticles)]
+        else:
+            self.particles = list(
+                map(lambda x: weight_dist.sample(), range(self.numParticles)))
 
     def elapseTime(self, gameState):
         """
