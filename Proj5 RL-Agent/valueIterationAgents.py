@@ -158,6 +158,17 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
+        nextValues = self.values.copy()
+        states = self.mdp.getStates()
+        for i in range(self.iterations):
+            # 对每个state进行更新
+            state = states[i % len(states)]
+            if self.mdp.isTerminal(state):
+                continue
+            maxQValue = max(
+                map(lambda action: self.getQValue(state, action),
+                    self.mdp.getPossibleActions(state)))
+            self.values[state] = maxQValue
 
 
 class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
