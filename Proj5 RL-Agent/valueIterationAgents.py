@@ -190,3 +190,41 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
+        states = filter(lambda state: not self.mdp.isTerminal(state),
+                        self.mdp.getStates())
+        priorQ = util.PriorityQueue()
+
+        predecessorDict: dict[tuple, set] = dict()
+        for state in states:
+            maxQValue = max(
+                map(lambda action: self.getQValue(state, action),
+                    self.mdp.getPossibleActions(state)))
+            diff = abs(maxQValue - self.getValue(state))
+            priorQ.update(state, -1 * diff)
+            #找祖先
+            for action in self.mdp.getPossibleActions(state):
+                sucessors = list(
+                    map(lambda x: x[0],
+                        self.mdp.getTransitionStatesAndProbs(state, action)))
+                for sucessor in sucessors:
+                    if sucessor not in predecessorDict.keys():
+                        predecessorDict[sucessor] = set()
+                    predecessorDict[sucessor].add(state)
+        for i in range(self.iterations):
+            if priorQ.isEmpty():
+                break
+
+            state = priorQ.pop()
+            #Update the value of s (if it is not a terminal state) in self.values
+            maxQValue = max(
+                map(lambda action: self.getQValue(state, action),
+                    self.mdp.getPossibleActions(state)))
+            self.values[state] = maxQValue
+            #For each predecessor p of s, do
+            for predecessor in predecessorDict[state]:
+                maxQValue = max(
+                    map(lambda action: self.getQValue(predecessor, action),
+                        self.mdp.getPossibleActions(predecessor)))
+                diff = abs(maxQValue - self.getValue(predecessor))
+                if diff > self.theta:
+                    priorQ.update(predecessor, -1 * diff)
