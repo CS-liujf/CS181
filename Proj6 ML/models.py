@@ -1,5 +1,6 @@
 import nn
 
+
 class PerceptronModel(object):
     def __init__(self, dimensions):
         """
@@ -18,7 +19,7 @@ class PerceptronModel(object):
         """
         return self.w
 
-    def run(self, x):
+    def run(self, x: nn.Constant):
         """
         Calculates the score assigned by the perceptron to a data point x.
 
@@ -27,20 +28,30 @@ class PerceptronModel(object):
         Returns: a node containing a single number (the score)
         """
         "*** YOUR CODE HERE ***"
+        return nn.DotProduct(x, self.w)
 
-    def get_prediction(self, x):
+    def get_prediction(self, x: nn.Constant):
         """
         Calculates the predicted class for a single data point `x`.
 
         Returns: 1 or -1
         """
         "*** YOUR CODE HERE ***"
+        return 1 if nn.as_scalar(nn.DotProduct(x, self.w)) >= 0 else -1
 
     def train(self, dataset):
         """
         Train the perceptron until convergence.
         """
         "*** YOUR CODE HERE ***"
+        isEnd = False
+        while not isEnd:
+            isEnd = True
+            for x, y in dataset.iterate_once(1):
+                if self.get_prediction(x) != nn.as_scalar(y):
+                    self.w.update(x, nn.as_scalar(y))
+                    isEnd = False
+
 
 class RegressionModel(object):
     """
@@ -80,6 +91,7 @@ class RegressionModel(object):
         Trains the model.
         """
         "*** YOUR CODE HERE ***"
+
 
 class DigitClassificationModel(object):
     """
@@ -135,6 +147,7 @@ class DigitClassificationModel(object):
         Trains the model.
         """
         "*** YOUR CODE HERE ***"
+
 
 class LanguageIDModel(object):
     """
